@@ -39,6 +39,19 @@ def get_my_parts(
     return db.query(models.Part).filter(models.Part.seller_id == current_user.id).all()
 
 
+@router.get("/{part_id}", response_model=schemas.PartResponse)
+def get_part(
+    part_id: int,
+    db: Session = Depends(get_db),
+):
+    part = db.query(models.Part).filter(models.Part.id == part_id).first()
+
+    if not part:
+        raise HTTPException(status_code=404, detail="Part not found")
+
+    return part
+
+
 @router.put("/{part_id}", response_model=schemas.PartResponse)
 def update_part(
     part_id: int,
