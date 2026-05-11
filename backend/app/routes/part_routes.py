@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -6,6 +6,18 @@ from app import models, schemas
 from app.oauth2 import get_current_user
 
 router = APIRouter(prefix="/parts", tags=["Parts"])
+
+
+@router.post("/upload-image")
+async def upload_image(file: UploadFile = File(...)):
+    file_path = f"uploads/{file.filename}"
+
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+
+    return {
+        "image_url": f"http://127.0.0.1:8000/uploads/{file.filename}"
+    }
 
 
 @router.post("/", response_model=schemas.PartResponse)
