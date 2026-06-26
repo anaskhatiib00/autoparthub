@@ -1,12 +1,12 @@
 "use client"
 
+import Navbar from "@/components/Navbar"
 import axios from "axios"
 import { useState } from "react"
 
 export default function AIAssistantPage() {
   const [query, setQuery] = useState("")
   const [loading, setLoading] = useState(false)
-
   const [result, setResult] = useState<any>(null)
 
   const handleSearch = async () => {
@@ -33,106 +33,108 @@ export default function AIAssistantPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-6 py-10 text-white">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-10">
-          <h1 className="text-5xl font-black">
-            AI Part Assistant
-          </h1>
+    <main className="min-h-screen bg-black text-white">
+      <Navbar />
 
-          <p className="mt-3 text-zinc-400">
-            Describe the part you need naturally.
-          </p>
-        </div>
+      <div className="px-6 py-10">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-10">
+            <h1 className="text-4xl font-black md:text-5xl">
+              AI Part Assistant
+            </h1>
 
-        {/* Search Box */}
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
-          <textarea
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Example: I need a left headlight for a 2018 Toyota Camry"
-            className="h-36 w-full rounded-2xl border border-zinc-700 bg-black p-4 outline-none focus:border-blue-500"
-          />
+            <p className="mt-3 text-zinc-400">
+              Describe the part you need naturally.
+            </p>
+          </div>
 
-          <button
-            onClick={handleSearch}
-            disabled={loading}
-            className="mt-5 rounded-xl bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-500"
-          >
-            {loading ? "Analyzing..." : "Analyze Search"}
-          </button>
-        </div>
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
+            <textarea
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Example: I need a left headlight for a 2018 Toyota Camry"
+              className="h-36 w-full rounded-2xl border border-zinc-700 bg-black p-4 outline-none focus:border-blue-500"
+            />
 
-        {/* Results */}
-        {result && (
-          <div className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-950 p-8">
-            <h2 className="mb-6 text-3xl font-bold">
-              AI Extracted Details
-            </h2>
+            <button
+              onClick={handleSearch}
+              disabled={loading}
+              className="mt-5 rounded-xl bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-500 disabled:opacity-50"
+            >
+              {loading ? "Analyzing..." : "Analyze Search"}
+            </button>
+          </div>
 
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="rounded-2xl bg-black p-5">
-                <p className="text-sm text-zinc-500">
-                  Make
-                </p>
+          {result && (
+            <div className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-950 p-8">
+              <h2 className="mb-6 text-3xl font-bold">
+                AI Extracted Details
+              </h2>
 
-                <p className="mt-2 text-2xl font-bold">
-                  {result.make || "Unknown"}
-                </p>
-              </div>
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="rounded-2xl bg-black p-5">
+                  <p className="text-sm text-zinc-500">
+                    Make
+                  </p>
 
-              <div className="rounded-2xl bg-black p-5">
-                <p className="text-sm text-zinc-500">
-                  Model
-                </p>
+                  <p className="mt-2 text-2xl font-bold">
+                    {result.make || "Unknown"}
+                  </p>
+                </div>
 
-                <p className="mt-2 text-2xl font-bold">
-                  {result.model || "Unknown"}
-                </p>
-              </div>
+                <div className="rounded-2xl bg-black p-5">
+                  <p className="text-sm text-zinc-500">
+                    Model
+                  </p>
 
-              <div className="rounded-2xl bg-black p-5">
-                <p className="text-sm text-zinc-500">
-                  Year
-                </p>
+                  <p className="mt-2 text-2xl font-bold">
+                    {result.model || "Unknown"}
+                  </p>
+                </div>
 
-                <p className="mt-2 text-2xl font-bold">
-                  {result.year || "Unknown"}
-                </p>
-              </div>
+                <div className="rounded-2xl bg-black p-5">
+                  <p className="text-sm text-zinc-500">
+                    Year
+                  </p>
 
-              <div className="rounded-2xl bg-black p-5">
-                <p className="text-sm text-zinc-500">
-                  Part
-                </p>
+                  <p className="mt-2 text-2xl font-bold">
+                    {result.year || "Unknown"}
+                  </p>
+                </div>
 
-                <p className="mt-2 text-2xl font-bold">
-                  {result.part || "Unknown"}
-                </p>
-              </div>
+                <div className="rounded-2xl bg-black p-5">
+                  <p className="text-sm text-zinc-500">
+                    Part
+                  </p>
 
-              <div className="rounded-2xl bg-black p-5">
-                <p className="text-sm text-zinc-500">
-                  Side
-                </p>
+                  <p className="mt-2 text-2xl font-bold">
+                    {result.part || "Unknown"}
+                  </p>
+                </div>
 
-                <p className="mt-2 text-2xl font-bold">
-                  {result.side || "Unknown"}
-                </p>
-              </div>
+                <div className="rounded-2xl bg-black p-5">
+                  <p className="text-sm text-zinc-500">
+                    Side
+                  </p>
 
-              <div className="rounded-2xl bg-black p-5">
-                <p className="text-sm text-zinc-500">
-                  Condition
-                </p>
+                  <p className="mt-2 text-2xl font-bold">
+                    {result.side || "Unknown"}
+                  </p>
+                </div>
 
-                <p className="mt-2 text-2xl font-bold">
-                  {result.condition || "Unknown"}
-                </p>
+                <div className="rounded-2xl bg-black p-5">
+                  <p className="text-sm text-zinc-500">
+                    Condition
+                  </p>
+
+                  <p className="mt-2 text-2xl font-bold">
+                    {result.condition || "Unknown"}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </main>
   )
