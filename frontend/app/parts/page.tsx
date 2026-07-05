@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar"
 import axios from "axios"
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 
 interface Part {
   id: number
@@ -20,24 +21,33 @@ interface Part {
 export default function PartsPage() {
   const [parts, setParts] = useState<Part[]>([])
   const [loading, setLoading] = useState(true)
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    fetchParts()
-  }, [])
+  fetchParts()
+  }, [searchParams])
 
   const fetchParts = async () => {
-    try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/parts/"
-      )
+  try {
+    const response = await axios.get(
+      "http://127.0.0.1:8000/parts/",
+      {
+        params: {
+          year: searchParams.get("year") || undefined,
+          make: searchParams.get("make") || undefined,
+          model: searchParams.get("model") || undefined,
+          part: searchParams.get("part") || undefined,
+          location: searchParams.get("location") || undefined,
+        },
+      }
+    )
 
-      setParts(response.data)
-
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
+    setParts(response.data)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    setLoading(false)
+  }
   }
 
   return (

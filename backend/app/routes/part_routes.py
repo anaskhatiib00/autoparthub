@@ -39,9 +39,37 @@ def create_part(
 
 
 @router.get("/", response_model=list[schemas.PartResponse])
-def get_parts(db: Session = Depends(get_db)):
-    return db.query(models.Part).all()
+def get_parts(
+    year: int | None = None,
+    make: str | None = None,
+    model: str | None = None,
+    part: str | None = None,
+    location: str | None = None,
+    category: str | None = None,
+    condition: str | None = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(models.Part)
 
+    if year:
+        query = query.filter(models.Part.year == year)
+
+    if make:
+        query = query.filter(models.Part.make.ilike(f"%{make}%"))
+
+    if model:
+        query = query.filter(models.Part.model.ilike(f"%{model}%"))
+
+    if part:
+        query = query.filter(models.Part.title.ilike(f"%{part}%"))
+
+    if category:
+        query = query.filter(models.Part.category.ilike(f"%{category}%"))
+
+    if condition:
+        query = query.filter(models.Part.condition.ilike(f"%{condition}%"))
+
+    return query.all()
 
 @router.get("/my-parts", response_model=list[schemas.PartResponse])
 def get_my_parts(
