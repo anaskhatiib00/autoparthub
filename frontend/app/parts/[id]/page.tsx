@@ -19,11 +19,19 @@ interface Part {
   seller_id: number
 }
 
+interface Seller {
+  id: number
+  full_name: string
+  email: string
+  role: string
+}
+
 export default function PartDetailsPage() {
   const params = useParams()
   const partId = params.id
 
   const [part, setPart] = useState<Part | null>(null)
+  const [seller, setSeller] = useState<Seller | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -37,6 +45,12 @@ export default function PartDetailsPage() {
       )
 
       setPart(response.data)
+
+      const sellerResponse = await axios.get(
+        `http://127.0.0.1:8000/auth/seller/${response.data.seller_id}`
+      )
+
+      setSeller(sellerResponse.data)
     } catch (error) {
       console.error(error)
       alert("Failed to load part")
@@ -120,7 +134,7 @@ export default function PartDetailsPage() {
               <div className="mt-6 grid gap-4">
                 <div className="rounded-2xl bg-black p-4">
                   <p className="text-sm text-zinc-500">Condition</p>
-                  <p className="mt-1 capitalize font-semibold">
+                  <p className="mt-1 font-semibold capitalize">
                     {part.condition}
                   </p>
                 </div>
@@ -132,10 +146,19 @@ export default function PartDetailsPage() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-black p-4">
-                  <p className="text-sm text-zinc-500">Seller ID</p>
-                  <p className="mt-1 font-semibold">
-                    #{part.seller_id}
+                <div className="rounded-2xl bg-black p-5">
+                  <p className="text-sm text-zinc-500">Seller</p>
+
+                  <p className="mt-2 text-lg font-bold">
+                    {seller?.full_name || "Loading seller..."}
+                  </p>
+
+                  <p className="text-sm capitalize text-zinc-400">
+                    {seller?.role || "Seller"}
+                  </p>
+
+                  <p className="mt-2 text-sm text-zinc-500">
+                    Seller #{seller?.id || part.seller_id}
                   </p>
                 </div>
               </div>
