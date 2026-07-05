@@ -54,6 +54,11 @@ class Part(Base):
     condition = Column(String, default="used")
 
     image_url = Column(String, nullable=True)
+    oem_number = Column(String, nullable=True)
+    mileage = Column(Integer, nullable=True)
+    warranty = Column(String, nullable=True)
+    shipping_option = Column(String, nullable=True)
+    location = Column(String, nullable=True)
 
     in_stock = Column(Boolean, default=True)
 

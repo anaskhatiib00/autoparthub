@@ -1,8 +1,14 @@
 "use client"
 
 import Navbar from "@/components/Navbar"
-import { useState } from "react"
+import DeliverySection from "@/components/sell/DeliverySection"
+import MarketplaceSection from "@/components/sell/MarketplaceSection"
+import PartInfoSection from "@/components/sell/PartInfoSection"
+import PhotoUpload from "@/components/sell/PhotoUpload"
+import PublishActions from "@/components/sell/PublishActions"
+import VehicleSection from "@/components/sell/VehicleSection"
 import axios from "axios"
+import { useState } from "react"
 
 export default function SellPage() {
   const [formData, setFormData] = useState({
@@ -15,15 +21,19 @@ export default function SellPage() {
     price: "",
     condition: "used",
     image_url: "",
+    oem_number: "",
+    mileage: "",
+    warranty: "",
+    shipping_option: "",
+    location: "",
   })
 
   const [uploading, setUploading] = useState(false)
+  const [publishing, setPublishing] = useState(false)
 
   const handleChange = (
     e: React.ChangeEvent<
-      HTMLInputElement |
-      HTMLTextAreaElement |
-      HTMLSelectElement
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
     setFormData({
@@ -36,14 +46,12 @@ export default function SellPage() {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0]
-
     if (!file) return
 
     try {
       setUploading(true)
 
       const uploadData = new FormData()
-
       uploadData.append("file", file)
 
       const response = await axios.post(
@@ -60,7 +68,6 @@ export default function SellPage() {
         ...prev,
         image_url: response.data.image_url,
       }))
-
     } catch (error) {
       console.error(error)
       alert("Image upload failed")
@@ -69,9 +76,7 @@ export default function SellPage() {
     }
   }
 
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const token = localStorage.getItem("token")
@@ -82,12 +87,15 @@ export default function SellPage() {
     }
 
     try {
+      setPublishing(true)
+
       await axios.post(
         "http://127.0.0.1:8000/parts/",
         {
           ...formData,
           year: Number(formData.year),
           price: Number(formData.price),
+          mileage: formData.mileage ? Number(formData.mileage) : null,
         },
         {
           headers: {
@@ -97,16 +105,19 @@ export default function SellPage() {
       )
 
       alert("Part published successfully!")
-
       window.location.href = "/parts"
-
     } catch (error: any) {
-      console.error(error)
+      console.error("Publish Error:", error)
 
-      alert(
-        error?.response?.data?.detail ||
-        "Failed to publish part"
-      )
+      if (error.response) {
+        console.log(error.response.data)
+        console.log(error.response.status)
+        alert(JSON.stringify(error.response.data))
+      } else {
+        alert(error.message)
+      }
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -114,123 +125,72 @@ export default function SellPage() {
     <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <div className="px-6 py-10">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl">
-          <h1 className="text-4xl font-black">
-            Publish Your Part
-          </h1>
-
-          <p className="mt-2 text-zinc-400">
-            List your part for buyers to find.
-          </p>
-
-          <form
-            onSubmit={handleSubmit}
-            className="mt-8 grid gap-5"
-          >
-            <input
-              name="title"
-              placeholder="Part title"
-              required
-              onChange={handleChange}
-              className="rounded-xl border border-zinc-700 bg-black px-4 py-3 outline-none focus:border-blue-500"
-            />
-
-            <textarea
-              name="description"
-              placeholder="Description"
-              onChange={handleChange}
-              className="rounded-xl border border-zinc-700 bg-black px-4 py-3 outline-none focus:border-blue-500"
-            />
-
-            <input
-              name="category"
-              placeholder="Category"
-              required
-              onChange={handleChange}
-              className="rounded-xl border border-zinc-700 bg-black px-4 py-3 outline-none focus:border-blue-500"
-            />
-
-            <div className="grid gap-5 md:grid-cols-3">
-              <input
-                name="make"
-                placeholder="Make"
-                required
-                onChange={handleChange}
-                className="rounded-xl border border-zinc-700 bg-black px-4 py-3 outline-none focus:border-blue-500"
-              />
-
-              <input
-                name="model"
-                placeholder="Model"
-                required
-                onChange={handleChange}
-                className="rounded-xl border border-zinc-700 bg-black px-4 py-3 outline-none focus:border-blue-500"
-              />
-
-              <input
-                name="year"
-                placeholder="Year"
-                required
-                onChange={handleChange}
-                className="rounded-xl border border-zinc-700 bg-black px-4 py-3 outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2">
-              <input
-                name="price"
-                placeholder="Price"
-                required
-                onChange={handleChange}
-                className="rounded-xl border border-zinc-700 bg-black px-4 py-3 outline-none focus:border-blue-500"
-              />
-
-              <select
-                name="condition"
-                onChange={handleChange}
-                className="rounded-xl border border-zinc-700 bg-black px-4 py-3 outline-none focus:border-blue-500"
-              >
-                <option value="used">Used</option>
-                <option value="new">New</option>
-                <option value="refurbished">
-                  Refurbished
-                </option>
-              </select>
-            </div>
-
-            <div className="rounded-2xl border border-dashed border-zinc-700 p-6">
-              <p className="mb-4 text-zinc-400">
-                Upload Part Image
+      <form onSubmit={handleSubmit}>
+        <div className="px-6 py-10">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-blue-400">
+                Seller Portal
               </p>
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
+              <h1 className="mt-3 text-4xl font-black md:text-5xl">
+                Publish Part
+              </h1>
 
-              {uploading && (
-                <p className="mt-3 text-blue-400">
-                  Uploading image...
-                </p>
-              )}
-
-              {formData.image_url && (
-                <img
-                  src={formData.image_url}
-                  alt="Uploaded"
-                  className="mt-5 h-56 w-full rounded-2xl object-cover"
-                />
-              )}
+              <p className="mt-3 max-w-2xl text-zinc-400">
+                Create a clear, professional listing buyers can trust.
+              </p>
             </div>
 
-            <button className="rounded-xl bg-blue-600 py-3 font-semibold hover:bg-blue-500">
-              Publish Part
-            </button>
-          </form>
+            <div className="grid gap-6">
+              <PhotoUpload
+                imageUrl={formData.image_url}
+                uploading={uploading}
+                onUpload={handleImageUpload}
+              />
+
+              <VehicleSection
+                formData={{
+                  year: formData.year,
+                  make: formData.make,
+                  model: formData.model,
+                }}
+                onChange={handleChange}
+              />
+
+              <PartInfoSection
+                formData={{
+                  title: formData.title,
+                  category: formData.category,
+                  oem_number: formData.oem_number,
+                  description: formData.description,
+                }}
+                onChange={handleChange}
+              />
+
+              <MarketplaceSection
+                formData={{
+                  condition: formData.condition,
+                  mileage: formData.mileage,
+                  price: formData.price,
+                }}
+                onChange={handleChange}
+              />
+
+              <DeliverySection
+                formData={{
+                  location: formData.location,
+                  shipping_option: formData.shipping_option,
+                  warranty: formData.warranty,
+                }}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
         </div>
-      </div>
+
+        <PublishActions publishing={publishing} />
+      </form>
     </main>
   )
 }

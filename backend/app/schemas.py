@@ -31,6 +31,11 @@ class PartCreate(BaseModel):
     price: float
     condition: str = "used"
     image_url: str | None = None
+    oem_number: str | None = None
+    mileage: int | None = None
+    warranty: str | None = None
+    shipping_option: str | None = None
+    location: str | None = None
 
 
 class PartResponse(PartCreate):
