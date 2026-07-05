@@ -153,8 +153,8 @@ export default function PartDetailsPage() {
                     {seller?.full_name || "Loading seller..."}
                   </p>
 
-                  <p className="text-sm capitalize text-zinc-400">
-                    {seller?.role || "Seller"}
+                  <p className="text-sm font-medium text-green-400">
+                    Verified Seller
                   </p>
 
                   <p className="mt-2 text-sm text-zinc-500">
