@@ -74,3 +74,17 @@ def token_login(
         "access_token": token,
         "token_type": "bearer"
     }
+
+
+
+@router.get("/seller/{seller_id}", response_model=schemas.UserResponse)
+def get_seller(
+    seller_id: int,
+    db: Session = Depends(get_db)
+):
+    seller = db.query(models.User).filter(models.User.id == seller_id).first()
+
+    if not seller:
+        raise HTTPException(status_code=404, detail="Seller not found")
+
+    return seller
