@@ -1,9 +1,13 @@
 "use client"
 
 import Navbar from "@/components/Navbar"
+import EmptyState from "@/components/parts/EmptyState"
+import Filters from "@/components/parts/Filters"
+import PartCard from "@/components/parts/PartCard"
+import ResultsHeader from "@/components/parts/ResultsHeader"
 import axios from "axios"
-import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 
 interface Part {
   id: number
@@ -19,36 +23,88 @@ interface Part {
 }
 
 export default function PartsPage() {
-  const [parts, setParts] = useState<Part[]>([])
-  const [loading, setLoading] = useState(true)
+  const router = useRouter()
   const searchParams = useSearchParams()
 
+  const [parts, setParts] = useState<Part[]>([])
+  const [loading, setLoading] = useState(true)
+  const [sort, setSort] = useState("newest")
+
+  const [filters, setFilters] = useState({
+    year: searchParams.get("year") || "",
+    make: searchParams.get("make") || "",
+    model: searchParams.get("model") || "",
+    part: searchParams.get("part") || "",
+    category: searchParams.get("category") || "",
+    condition: searchParams.get("condition") || "",
+  })
+
   useEffect(() => {
-  fetchParts()
+    fetchParts()
   }, [searchParams])
 
   const fetchParts = async () => {
-  try {
-    const response = await axios.get(
-      "http://127.0.0.1:8000/parts/",
-      {
+    try {
+      setLoading(true)
+
+      const response = await axios.get("http://127.0.0.1:8000/parts/", {
         params: {
           year: searchParams.get("year") || undefined,
           make: searchParams.get("make") || undefined,
           model: searchParams.get("model") || undefined,
           part: searchParams.get("part") || undefined,
-          location: searchParams.get("location") || undefined,
+          category: searchParams.get("category") || undefined,
+          condition: searchParams.get("condition") || undefined,
         },
-      }
-    )
+      })
 
-    setParts(response.data)
-  } catch (error) {
-    console.error(error)
-  } finally {
-    setLoading(false)
+      setParts(response.data)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
   }
+
+  const handleFilterChange = (name: string, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
+
+  const applyFilters = () => {
+    const params = new URLSearchParams()
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value)
+    })
+
+    router.push(`/parts?${params.toString()}`)
+  }
+
+  const sortedParts = useMemo(() => {
+    const copied = [...parts]
+
+    if (sort === "price_low") {
+      return copied.sort((a, b) => a.price - b.price)
+    }
+
+    if (sort === "price_high") {
+      return copied.sort((a, b) => b.price - a.price)
+    }
+
+    return copied.sort((a, b) => b.id - a.id)
+  }, [parts, sort])
+
+  const searchSummary = [
+    searchParams.get("year"),
+    searchParams.get("make"),
+    searchParams.get("model"),
+    searchParams.get("part"),
+  ]
+    .filter(Boolean)
+    .join(" • ")
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -57,70 +113,43 @@ export default function PartsPage() {
       <div className="px-6 py-10">
         <div className="mx-auto max-w-7xl">
           <div className="mb-10">
-            <h1 className="text-5xl font-black">
+            <h1 className="text-4xl font-black md:text-5xl">
               Browse Parts
             </h1>
 
             <p className="mt-3 text-zinc-400">
-              Find OEM and aftermarket parts from trusted sellers.
+              Search inventory by vehicle, part, and condition.
             </p>
           </div>
 
-          {loading ? (
-            <p>Loading parts...</p>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {parts.map((part) => (
-                <div
-                  key={part.id}
-                  className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-xl"
-                >
-                  <img
-                    src={
-                      part.image_url ||
-                      "https://images.unsplash.com/photo-1489824904134-891ab64532f1?q=80&w=1200&auto=format&fit=crop"
-                    }
-                    alt={part.title}
-                    className="h-56 w-full object-cover"
-                  />
+          <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+            <Filters
+              filters={filters}
+              onChange={handleFilterChange}
+              onApply={applyFilters}
+            />
 
-                  <div className="p-5">
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="rounded-full bg-blue-600/20 px-3 py-1 text-xs text-blue-400">
-                        {part.category}
-                      </span>
+            <div>
+              <ResultsHeader
+                total={sortedParts.length}
+                searchSummary={searchSummary}
+                sort={sort}
+                onSortChange={setSort}
+              />
 
-                      <span className="text-sm capitalize text-zinc-400">
-                        {part.condition}
-                      </span>
-                    </div>
-
-                    <h2 className="mb-2 text-xl font-bold">
-                      {part.title}
-                    </h2>
-
-                    <p className="mb-4 line-clamp-2 text-sm text-zinc-400">
-                      {part.description}
-                    </p>
-
-                    <div className="mb-4 text-sm text-zinc-500">
-                      {part.year} {part.make} {part.model}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <p className="text-2xl font-black text-blue-500">
-                        ${part.price}
-                      </p>
-
-                      <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500">
-                        View Part
-                      </button>
-                    </div>
-                  </div>
+              {loading ? (
+                <p>Loading parts...</p>
+              ) : sortedParts.length === 0 ? (
+                <EmptyState />
+              ) : (
+                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {sortedParts.map((part) => (
+                    <PartCard key={part.id} part={part} />
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </main>
